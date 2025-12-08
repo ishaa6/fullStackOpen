@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
-import axios from 'axios';
-const url = "http://localhost:3001/persons"
+import service from './services/contacts'
 
 const Filter = ({filterText, handleFilterChange}) => (
   <div>
@@ -27,11 +26,11 @@ const PersonForm = ({handleForm, newName, newNumber, handleInput, handleNumber})
 
 const App = () => {
   useEffect(() => {
-    axios
-      .get(url)
+    service
+      .getData()
       .then(response => {
-        setPersons(response.data);
-        setPersonsToShow(response.data);
+        setPersons(response);
+        setPersonsToShow(response);
       })
   }, [])
 
@@ -52,10 +51,10 @@ const App = () => {
       setNewNumber('');
       return;
     }
-    axios
-      .post(url, newContact)
-      .then(() => {
-        const updatedPersons = persons.concat(newContact);
+    service
+      .postData( newContact)
+      .then(response => {
+        const updatedPersons = persons.concat(response);
         setPersons(updatedPersons);
         setPersonsToShow(updatedPersons);
         setFilterText('');
@@ -64,8 +63,7 @@ const App = () => {
         console.log(persons);
         setNewName('');
         setNewNumber('');
-        console.log("DB updated");
-  });
+    });
   }
 
   const handleInput = (event) => {
@@ -85,6 +83,17 @@ const App = () => {
     setPersonsToShow(filtered);
   }
 
+  const handleDelete = (id, name) => {
+    const confirmation = window.confirm(`Delete ${name} ?`);
+    if (!confirmation) return;
+    service
+      .deleteData(id)
+      .then(() => {
+        setPersons(persons.filter(person=> person.id!=id));
+        setPersonsToShow(personsToShow.filter(persons=> persons.id!=id));
+      })
+  }
+
   return (
     <div>
       <h2>Phonebook</h2>
@@ -93,7 +102,12 @@ const App = () => {
       <PersonForm handleForm={handleForm} newName={newName} newNumber={newNumber} handleInput={handleInput} handleNumber={handleNumber}/>
       <h2>Numbers</h2>
       {
-        personsToShow.map(person => <p>{person.name} {person.number}</p>)
+        personsToShow.map(person => 
+          <div key={person.id}>
+            {person.name} {person.number}
+            <button onClick={() => handleDelete(person.id, person.name)}>delete</button>
+          </div>
+      )
       }
     </div>
   )
