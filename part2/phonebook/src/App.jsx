@@ -8,6 +8,18 @@ const Filter = ({filterText, handleFilterChange}) => (
   </div>
 );
 
+const Notification = ({message, type}) => {
+  const style = {
+    color: type === 'success'? 'green' : 'red',
+    border: `2px solid ${type === 'success'?'green':'red'}`
+  }
+
+  if (!message) return null;
+  return (
+    <div className="noti" style={style}>{message}</div>
+  )
+}
+
 const PersonForm = ({handleForm, newName, newNumber, handleInput, handleNumber}) => {
   return(
       <form onSubmit={handleForm}>
@@ -32,6 +44,10 @@ const App = () => {
         setPersons(response);
         setPersonsToShow(response);
       })
+      .catch(error => {
+        setNotificationType('error');
+        showNotification("Error loading data");
+      })
   }, [])
 
   const [persons, setPersons] = useState([]);
@@ -39,6 +55,8 @@ const App = () => {
   const [newName, setNewName] = useState('');
   const [newNumber, setNewNumber] = useState('');
   const [filterText, setFilterText] = useState('');
+  const [notification, setNotification] = useState(null);
+  const [notificationType, setNotificationType] = useState('success');
 
   const handleForm = (event) => {
     event.preventDefault();
@@ -61,22 +79,32 @@ const App = () => {
           setPersonsToShow(personsToShow.map(person => person.id === contact.id ? contact:person));
           setNewName('');
           setNewNumber('');
+          setNotificationType('success');
+          showNotification(`Updated ${contact.name}`);
+        })
+        .catch(error => {
+          setNotificationType('error');
+          showNotification(`Information of ${contact.name} has already been removed from server`);
         })
       return;
     }
     service
-      .postData( newContact)
+      .postData(newContact)
       .then(response => {
         const updatedPersons = persons.concat(response);
         setPersons(updatedPersons);
         setPersonsToShow(updatedPersons);
         setFilterText('');
         event.target.reset();
-        console.log("Added new contact:", newContact);
-        console.log(persons);
         setNewName('');
         setNewNumber('');
-    });
+        setNotificationType('success');
+        showNotification(`Added ${newContact.name}`);
+    })
+    .catch(error => {
+      setNotificationType('error');
+      showNotification(`Information of ${contact.name} has already been removed from server`);
+    })
   }
 
   const handleInput = (event) => {
@@ -104,12 +132,26 @@ const App = () => {
       .then(() => {
         setPersons(persons.filter(person=> person.id!=id));
         setPersonsToShow(personsToShow.filter(persons=> persons.id!=id));
+        setNotificationType('success');
+        showNotification(`Deleted ${name}`);
       })
+      .catch(error => {
+        setNotificationType('error');
+        showNotification(`Information of ${name} has already been removed from server`);
+      })
+  }
+
+  const showNotification = (msg) => {
+    setNotification(msg);
+    setTimeout(() => {
+      setNotification(null);
+    }, 3000);
   }
 
   return (
     <div>
       <h2>Phonebook</h2>
+      <Notification message={notification} type={notificationType}/>
       <Filter filterText={filterText} handleFilterChange={filter}/>
       <h3>add a new</h3>
       <PersonForm handleForm={handleForm} newName={newName} newNumber={newNumber} handleInput={handleInput} handleNumber={handleNumber}/>
