@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import axios from 'axios';
+const url = "http://localhost:3001/persons"
 
 const Filter = ({filterText, handleFilterChange}) => (
   <div>
@@ -27,7 +28,7 @@ const PersonForm = ({handleForm, newName, newNumber, handleInput, handleNumber})
 const App = () => {
   useEffect(() => {
     axios
-      .get('http://localhost:3001/persons')
+      .get(url)
       .then(response => {
         setPersons(response.data);
         setPersonsToShow(response.data);
@@ -51,15 +52,20 @@ const App = () => {
       setNewNumber('');
       return;
     }
-    const updatedPersons = persons.concat(newContact);
-    setPersons(updatedPersons);
-    setPersonsToShow(updatedPersons);
-    setFilterText('');
-    event.target.reset();
-    console.log("Added new contact:", newContact);
-    console.log(persons);
-    setNewName('');
-    setNewNumber('');
+    axios
+      .post(url, newContact)
+      .then(() => {
+        const updatedPersons = persons.concat(newContact);
+        setPersons(updatedPersons);
+        setPersonsToShow(updatedPersons);
+        setFilterText('');
+        event.target.reset();
+        console.log("Added new contact:", newContact);
+        console.log(persons);
+        setNewName('');
+        setNewNumber('');
+        console.log("DB updated");
+  });
   }
 
   const handleInput = (event) => {
