@@ -10,12 +10,15 @@ const getData = () => {
 
 const postData = (newContact) => {
     const request = axios.post(url, newContact);
-    return request.then (response => response.data);
+    return request.then(response => response.data);
 }
 
 const deleteData = (id) => {
-    console.log("Deleting...");
     return axios.delete(`${url}/${id}`);
 }
 
-export default {getData, postData, deleteData}
+const updateData = (contact) => {
+    return axios.put(`${url}/${contact.id}`, contact);
+}
+
+export default {getData, postData, deleteData, updateData}

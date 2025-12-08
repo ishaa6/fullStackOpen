@@ -46,9 +46,22 @@ const App = () => {
       name: newName, number: newNumber
     }
     if (persons.some(person => person.name === newName)){
-      alert(`${newName} is already added to phonebook`);
-      setNewName('');
-      setNewNumber('');
+      const confirmation = window.confirm(`${newName} is already added to phoenbook, replace the old number with a new one?`);
+      if (!confirmation) {
+        setNewName('');
+        setNewNumber('');
+        return;
+      }
+      let contact = persons.find(person => person.name === newName);
+      contact = {...contact, number: newNumber}
+      service
+        .updateData(contact)
+        .then (() => {
+          setPersons(persons.map(person => person.id === contact.id ? contact:person));
+          setPersonsToShow(personsToShow.map(person => person.id === contact.id ? contact:person));
+          setNewName('');
+          setNewNumber('');
+        })
       return;
     }
     service
