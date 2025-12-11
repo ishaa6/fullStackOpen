@@ -1,0 +1,49 @@
+# === Node.js ===
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# === Build outputs ===
+dist/
+build/
+.out/
+
+# === Logs ===
+logs/
+*.log
+*.log.*
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# === Environment variables ===
+.env
+.env.local
+.env.*.local
+
+# Vite environment exposed vars start with VITE_
+# DO NOT commit them
+.env.production
+.env.development
+
+# === System files ===
+.DS_Store
+Thumbs.db
+
+# === VS Code ===
+.vscode/
+
+# === REST Client requests (optional) ===
+requests.http
+*.rest
+
+# === Temporary files ===
+temp/
+*.tmp
+
+# === Cache ===
+.cache/
+.parcel-cache/
+vite-cache/
