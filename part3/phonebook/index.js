@@ -4,6 +4,7 @@ const morgan = require('morgan');
 
 app.use(express.json());
 app.use(morgan('tiny'));
+app.use(express.static('dist'));
 
 const generateId = () => {
     let id;
@@ -36,11 +37,11 @@ let persons = [
     }
 ]
 
-app.get('/api/persons', (req, res) => {
+app.get('/persons', (req, res) => {
     res.json(persons);
 })
 
-app.get('/api/persons/:id', (req, res) => {
+app.get('/persons/:id', (req, res) => {
     const id = req.params.id;
     const person = persons.find(person => person.id === id);
     if (person) res.json(person);
@@ -55,13 +56,13 @@ app.get('/info', (req, res) => {
 );
 })
 
-app.delete('/api/persons/:id', (req, res) => {
+app.delete('/persons/:id', (req, res) => {
     const id = req.params.id;
     persons = persons.filter(person => person.id !== id);
     res.status(204).end();
 })
 
-app.post('/api/persons', (req, res) => {
+app.post('/persons', (req, res) => {
     const body = req.body;
     console.log(body);
 
