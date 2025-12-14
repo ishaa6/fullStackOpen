@@ -8,38 +8,46 @@ app.use(express.json());
 app.use(morgan('tiny'));
 app.use(express.static('dist'));
 
-app.get('/persons', (req, res) => {
-    Person.find({}).then(result => res.json(result))
+app.get('/persons', (req, res, next) => {
+    Person.find({})
+    .then(result => res.json(result))
+    .catch(error => next(error));   
 })
 
-app.get('/persons/:id', (req, res) => {
+app.get('/persons/:id', (req, res, next) => {
     const id = req.params.id;
-    Person.findById(id).then(person => {
+    Person.findById(id)
+    .then(person => {
         if (person) res.json(person);
         else res.status(404).end();
     })
+    .catch(error => next(error));
 })
 
-app.get('/info', (req, res) => {
+app.get('/info', (req, res, next) => {
     const date = new Date();
-    Person.countDocuments({}).then(count => {
+    Person.countDocuments({})
+    .then(count => {
         res.send(`
         <p>Phonebook has info for ${count} people</p>
         <p>${date}</p>
         `)
-    });
+    })
+    .catch(error => next(error));
 })
 
-app.delete('/persons/:id', (req, res) => {
+app.delete('/persons/:id', (req, res, next) => {
     const id = req.params.id;
     console.log(`Deleting id: ${id}`);
-    Person.findByIdAndDelete(id).then(() => {
+    Person.findByIdAndDelete(id)
+    .then(() => {
         console.log('Deleted successfully');
         res.status(204).json({message: 'Deleted successfully'});
     })
+    .catch(error => next(error));
 });
 
-app.post('/persons', (req, res) => {
+app.post('/persons', (req, res, next) => {
     const body = req.body;
     console.log(body);
 
@@ -51,12 +59,14 @@ app.post('/persons', (req, res) => {
         name: body.name, 
         number: body.number
     });
-    person.save().then(() => {
+    person.save()
+    .then(() => {
         res.status(201).json(person);
     })
+    .catch(error => next(error));
 })
 
-app.put('/persons/:id', (req, res) => {
+app.put('/persons/:id', (req, res, next) => {
     const id = req.params.id;
     const body = req.body;
     const updatedPerson = {
@@ -67,8 +77,25 @@ app.put('/persons/:id', (req, res) => {
     Person.findByIdAndUpdate(id, updatedPerson, {new: true})
         .then(result => {
             res.json(result);
-        });
+        })
+        .catch(error => next(error));
 })
+
+
+
+const unknownEndpoint = (req, res) => {
+    res.status(404).send({error: 'unknown endpoint'});
+}
+app.use(unknownEndpoint);
+
+const errorHandler = (error, req, res, next) => {
+    console.error(error.message);
+    if (error.name === 'CastError'){
+        return res.status(400).send({error: 'malformatted id'});
+    } 
+    next(error);
+}
+app.use(errorHandler);
 
 morgan.token('body', (req) => {
     return req.method === 'POST' ? JSON.stringify(req.body) : '';
