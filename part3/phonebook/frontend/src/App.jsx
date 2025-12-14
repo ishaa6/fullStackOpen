@@ -85,8 +85,11 @@ const App = () => {
           showNotification(`Updated ${contact.name}`);
         })
         .catch(error => {
-          setNotificationType('error');
+        if (error.response && error.response.data.error) {
+          showNotification(error.response.data.error);
+        } else {
           showNotification(`Information of ${oldContact.name} has already been removed from server`);
+        }
         })
       return;
     }
@@ -106,7 +109,11 @@ const App = () => {
     })
     .catch(error => {
       setNotificationType('error');
-      showNotification(`Information of ${newContact.name} has already been removed from server`);
+      if (error.response && error.response.data.error) {
+        showNotification(error.response.data.error);
+      } else {
+        showNotification(`Failed to add ${newContact.name}`);
+      }
     })
   }
 
@@ -140,7 +147,11 @@ const App = () => {
       })
       .catch(error => {
         setNotificationType('error');
-        showNotification(`Information of ${name} has already been removed from server`);
+        if (error.response && error.response.data.error) {
+          showNotification(error.response.data.error);
+        } else {
+          showNotification(`Information of ${name} has already been removed from server`);
+  }
       })
   }
 
