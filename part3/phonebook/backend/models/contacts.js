@@ -1,5 +1,5 @@
-const mongoose = require('mongoose')
 require('dotenv').config()
+const mongoose = require('mongoose')
 
 const password = encodeURIComponent(process.env.DB_PASSWORD)
 
@@ -14,6 +14,7 @@ mongoose.connect(url, {family: 4})
     console.log('Connected to database')
   })
   .catch((err) => {
+    console.log(password)
     console.log('Error connecting to database:', err.message)
   })
 
