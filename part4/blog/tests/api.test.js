@@ -159,7 +159,39 @@ describe('POST /api/blogs', () => {
     })
 })
 
+test('DELETE /api/blogs/:id deletes a blog post', async () => {
+    const blogsAtStart = await Blog.find({})
+    const blogToDelete = blogsAtStart[0]
+
+    await api
+        .delete(`/api/blogs/${blogToDelete.id}`)
+        .expect(204)
+
+    const blogsAtEnd = await Blog.find({})
+    assert.strictEqual(blogsAtEnd.length, blogsAtStart.length - 1)
+
+    const titles = blogsAtEnd.map(b => b.title)
+    assert.ok(!titles.includes(blogToDelete.title))
+})
 
 after (async() => {
     await mongoose.connection.close()
+})
+
+test('PUT /api/blogs/:id updates a blog post', async () => {
+    const blogsAtStart = await Blog.find({})
+    const blogToUpdate = blogsAtStart[0]
+
+    const updatedData = {
+        ...blogToUpdate.toObject(),
+        likes: blogToUpdate.likes + 1
+    }
+
+    const response = await api
+        .put(`/api/blogs/${blogToUpdate.id}`)
+        .send(updatedData)
+        .expect(200)
+        .expect('Content-Type', /application\/json/)    
+
+    assert.strictEqual(response.body.likes, blogToUpdate.likes + 1)
 })
