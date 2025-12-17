@@ -23,6 +23,10 @@ const errorHandler = (error, req, res, next) => {
     return res.status(400).json({ error: error.message })
   }
 
+  if (error.name === 'MongoServerError' && error.code === 11000) {
+    return res.status(400).json({ error: 'username must be unique' })
+  }
+
   next(error)
 }
 
