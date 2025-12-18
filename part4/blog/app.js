@@ -9,6 +9,7 @@ const app = express()
 app.use(express.json())
 app.use(middl.requestLogger)
 app.use(middl.tokenExtractor)
+app.use(middl.userExtractor)
 
 app.use('/api/login', loginRouter)
 app.use('/api/blogs', appRouter)
