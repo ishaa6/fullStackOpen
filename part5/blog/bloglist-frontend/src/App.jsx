@@ -10,20 +10,30 @@ const App = () => {
   const [user, setUser] = useState(null)
 
   useEffect(() => {
-    blogService.getAll().then(blogs =>
-      setBlogs( blogs )
-    )  
+    blogService.getAll().then(blogs => setBlogs( blogs ) )
+
+    const loggedUserJSON = window.localStorage.getItem('loggedUser')
+    if (loggedUserJSON){
+      const loggedUser = JSON.parse(loggedUserJSON)
+      setUser(loggedUser)
+      blogService.setToken(loggedUser.token)
+    }
   }, [])
 
   const handleForm = async(event) => {
-    console.log(blogs)
     event.preventDefault()
-    const res = await blogService.login(username, password)
-    if (!res) console.log("invalid login credential")
-    else {
-      console.log(res)
+    try{
+      const res = await blogService.login(username, password)
+      
+      window.localStorage.setItem(
+        'loggedUser', JSON.stringify(res)
+      )
+
       setUser(res)
+      blogService.setToken(res.token)
       setUserBlogs(blogs.filter(blog => blog.user.id===res.id))
+    } catch(error) {
+      console.log(error)
     }
   }
 

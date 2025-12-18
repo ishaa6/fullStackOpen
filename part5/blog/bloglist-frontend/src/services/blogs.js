@@ -1,6 +1,12 @@
 import axios from 'axios'
 const baseUrl = 'http://localhost:3003'
 
+let token = null
+
+const setToken = (token) => {
+  token = `Bearer ${token}`
+}
+
 const getAll = () => {
   const request = axios.get(`${baseUrl}/api/blogs/`)
   return request.then(response => response.data)
@@ -21,5 +27,6 @@ const login = (username, pwd) => {
 
 export default { 
   getAll,
-  login
+  login,
+  setToken
  }
