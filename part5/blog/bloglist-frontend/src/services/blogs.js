@@ -3,8 +3,8 @@ const baseUrl = 'http://localhost:3003'
 
 let token = null
 
-const setToken = (token) => {
-  token = `Bearer ${token}`
+const setToken = (newToken) => {
+  token = `Bearer ${newToken}`
 }
 
 const getAll = () => {
@@ -25,8 +25,25 @@ const login = (username, pwd) => {
     })
 }
 
+const postData = (title, auth, url) => {
+  const body = {
+    title: title,
+    author: auth,
+    url: url,
+  }
+
+  const header = {
+    'Authorization': token
+  }
+  return axios
+  .post(`${baseUrl}/api/blogs/`, body, {headers: header})
+  .then(() => console.log("Data Posted"))
+  .catch(error => console.log("Error: ", error))
+}
+
 export default { 
   getAll,
   login,
-  setToken
+  setToken,
+  postData
  }
