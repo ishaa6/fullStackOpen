@@ -1,14 +1,19 @@
 import { useState, useEffect } from 'react'
-import Blog from './components/Blog'
+import './index.css'
+
 import blogService from './services/blogs'
+import Notification from './components/Notification'
+import BlogForm from './components/BlogForm'
+import Togglable from './components/Togglable'
+import Blog from './components/Blog'
 
 const App = () => {
   const [blogs, setBlogs] = useState([])
+  const [notification, setNotification] = useState(null)
+  const [notificationType, setNotificationType] = useState(null)
+
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
-  const [title, setTitle] = useState('')
-  const [author, setAuthor] = useState('')
-  const [url, setUrl] = useState('')
   const [user, setUser] = useState(null)
 
   useEffect(() => {
@@ -23,7 +28,9 @@ const App = () => {
   }, [])
 
   const userBlogs = user
-  ? blogs.filter(blog => blog.user?.id === user.id)
+  ? blogs
+    .filter(blog => blog.user?.id === user.id)
+    .sort((a,b) => b.likes-a.likes)
   : []
 
 
@@ -38,26 +45,57 @@ const App = () => {
 
       setUser(res)
       blogService.setToken(res.token)
+
+      setNotificationType('success')
+      setNotification(`Welcone ${res.name}`)
+      setTimeout(()=>setNotification(null),5000)
     } catch(error) {
-      console.log(error)
+      setNotificationType('error')
+      setNotification(error?.response?.data?.error || 'login failed')
+      setTimeout(()=>setNotification(null),5000)
     }
   }
 
-  const handlePost = (event) => {
+  const handlePost = ({title, author, url}) => {
     event.preventDefault()
     blogService.postData(title, author, url)
-    .then(() => {
-      setTitle("")
-      setAuthor("")
-      setUrl("")
+    .then((newBlog) => {
+      const blogObj = {
+        ...newBlog,
+        user: {
+          id: user.id,
+          name: user.name,
+          username: user.username
+        }
+      }
+
+      setNotificationType('success')
+      setNotification(`a new blog ${title} by ${author} added`)
+      setTimeout(()=>setNotification(null),5000)
+
+      setBlogs(blogs.concat(blogObj))
     })
+    .catch(error => {
+      setNotification(error?.response?.data?.error || 'failed to post')
+      setNotificationType('error')
+      setTimeout(()=>setNotification(null),5000)
+    })
+  }
+
+  const handleDelete = (id) => {
+    setBlogs(blogs.filter(blog => blog.id!==id))
   }
 
   return (
     <div>
+
         {!user &&
           <div>
             <h2>log in to application</h2>
+            <Notification
+              message={notification}
+              type={notificationType}
+            />
             <form onSubmit={handleForm}>
             <label>
               username
@@ -86,44 +124,53 @@ const App = () => {
 
       {user &&
         <div>
-          <h2>blogs</h2>
-          <p>{user.name} logged in</p> <br/>
-
           <h2>create new</h2>
-          <form onSubmit={handlePost}>
-            <label>
-              title:
-              <input
-                type="text"
-                value={title}
-                onChange={(event)=>{setTitle(event.target.value)}}
-                required  
-              />
-            </label> <br/>
-            <label>
-              author:
-              <input
-                type="text"
-                value={author}
-                onChange={(event)=>{setAuthor(event.target.value)}}
-                required  
-              />
-            </label> <br/>
-            <label>
-              url:
-              <input
-                type="text"
-                value={url}
-                onChange={(event)=>{setUrl(event.target.value)}}
-                required  
-              />
-            </label> <br/>
-            <button type="submit">create</button>
-          </form>
+          <Notification
+                message={notification}
+                type={notificationType}
+          />
+
+          {user.name} logged in 
+          <button
+            onClick={() => {
+              window.localStorage.removeItem('loggedUser')
+              blogService.setToken(null)
+              setUser(null)
+            }}
+          >
+            logout
+          </button> <br/><br/>
+
+          <Togglable 
+            buttonLabel='create new blog'
+            hideLabel='cancel'
+          >
+            <BlogForm
+              handlePost={handlePost}
+            />
+          </Togglable>
 
             {userBlogs.map(blog => 
-              <Blog key={blog.id} blog={blog}/>
+              <div 
+                style={{border:'2px solid black', marginBottom:'5px'}}
+                key={blog.id}
+              >
+                
+                {blog.title} {blog.author}
+                
+                <Togglable 
+                  buttonLabel='view'
+                  hideLabel='hide'
+                >
+                  <Blog 
+                    key={blog.id} 
+                    blog={blog}
+                    onDelete={handleDelete}
+                  />
+                </Togglable>
+              </div>
             )}
+
         </div>
       }
     </div>

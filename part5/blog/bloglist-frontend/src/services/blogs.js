@@ -19,10 +19,6 @@ const login = (username, pwd) => {
       password: pwd
     })
     .then(response => response.data)
-    .catch(error => {
-      console.log(error)
-      return null
-    })
 }
 
 const postData = (title, auth, url) => {
@@ -37,13 +33,29 @@ const postData = (title, auth, url) => {
   }
   return axios
   .post(`${baseUrl}/api/blogs/`, body, {headers: header})
-  .then(() => console.log("Data Posted"))
+  .then(response => response.data )
   .catch(error => console.log("Error: ", error))
+}
+
+const updateData = (id, likes) => {
+  const header = {'Authorization': token}
+  return axios
+  .put(`${baseUrl}/api/blogs/${id}/`, {likes}, {headers: header})
+  .then(response => response.data)
+  .catch(error => console.log(error))  
+}
+
+const deleteData = (id) => {
+  const header = {'Authorization': token}
+  return axios
+  .delete(`${baseUrl}/api/blogs/${id}/`, {headers: header})
 }
 
 export default { 
   getAll,
   login,
   setToken,
-  postData
+  postData,
+  updateData,
+  deleteData
  }
