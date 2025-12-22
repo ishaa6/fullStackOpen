@@ -21,9 +21,9 @@ const Blog = ({ blog, onDelete }) => {
 
   return(
     <div style={{display:visible?'':'flex'}}>
-      <div className='blog' style={{ margin: '4px 0', display:'flex'}}>
+      <div className='blog' style={{ margin: '0px 4px', display:'flex'}}>
         <p className='title'>{blog.title}</p> 
-        <p className='author'>{blog.author}</p>
+        <p className='author' style={{marginLeft:'4px'}}>{blog.author}</p>
       </div>
 
       <Togglable 

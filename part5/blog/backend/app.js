@@ -4,6 +4,7 @@ const cors = require('cors')
 const loginRouter = require('./controllers/login')
 const appRouter = require('./controllers/blogs')
 const userRouter = require('./controllers/users')
+const testingRouter = require('./controllers/testing')
 const middl = require('./utils/middleware')
 
 const app = express()
@@ -19,6 +20,9 @@ app.use('/api/blogs',
     middl.userExtractor,
     appRouter
 )
+if (process.env.NODE_ENV === 'test'){
+    app.use('/api/testing', testingRouter)
+}
 
 app.use(middl.unknownEndpoint)
 app.use(middl.errorHandler)
