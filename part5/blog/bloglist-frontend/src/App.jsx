@@ -11,6 +11,7 @@ const App = () => {
   const [blogs, setBlogs] = useState([])
   const [notification, setNotification] = useState(null)
   const [notificationType, setNotificationType] = useState(null)
+  const [visible, setVisible] = useState(false)
 
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
@@ -47,7 +48,7 @@ const App = () => {
       blogService.setToken(res.token)
 
       setNotificationType('success')
-      setNotification(`Welcone ${res.name}`)
+      setNotification(`Welcome ${res.name}`)
       setTimeout(()=>setNotification(null),5000)
     } catch(error) {
       setNotificationType('error')
@@ -144,6 +145,8 @@ const App = () => {
           <Togglable 
             buttonLabel='create new blog'
             hideLabel='cancel'
+            visible={visible}
+            setVisible={setVisible}
           >
             <BlogForm
               handlePost={handlePost}
@@ -155,19 +158,11 @@ const App = () => {
                 style={{border:'2px solid black', marginBottom:'5px'}}
                 key={blog.id}
               >
-                
-                {blog.title} {blog.author}
-                
-                <Togglable 
-                  buttonLabel='view'
-                  hideLabel='hide'
-                >
                   <Blog 
                     key={blog.id} 
                     blog={blog}
                     onDelete={handleDelete}
                   />
-                </Togglable>
               </div>
             )}
 
