@@ -87,6 +87,14 @@ const App = () => {
     setBlogs(blogs.filter(blog => blog.id!==id))
   }
 
+  const handleLike = (id) => {
+    setBlogs(blogs.map(blog => 
+      blog.id === id 
+        ? { ...blog, likes: blog.likes + 1 } 
+        : blog
+    ))
+  }
+
   return (
     <div>
 
@@ -162,6 +170,7 @@ const App = () => {
                     key={blog.id} 
                     blog={blog}
                     onDelete={handleDelete}
+                    onLike={handleLike}
                   />
               </div>
             )}

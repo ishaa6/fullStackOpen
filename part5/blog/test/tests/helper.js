@@ -8,12 +8,37 @@ const login = async(page, username, password) => {
         }
 }
 
-const getToken = async(page, request) => {
-        const loginResponse = await page.request.post('http://localhost:3003/api/login', {
+const getToken = async(request) => {
+        const loginResponse = await request.post('http://localhost:3003/api/login', {
             data: { username: 'test', password: '123' }
         })
         const body = await loginResponse.json()
         return body.token
 }
 
-export {login, getToken}
+const createUser = async(request, username, name, password) => {
+    await request.post('http://localhost:3003/api/users', {
+        data: {username, name, password}
+    })
+} 
+
+const logout = async(page) => {
+    await page.getByRole('button', {name:'logout'}).click()
+}
+
+const createBlog = async(page, title, author, url) => {
+    await page.getByLabel('title:').fill(title)
+    await page.getByLabel('author:').fill(author)
+    await page.getByLabel('url:').fill(url)
+    await page.getByRole('button', {name: 'create'}).click()
+}
+
+const like = async(page) => {
+    await page.getByRole('button', {name: 'like'}).click()
+}
+
+const view = async(page) => {
+    await page.getByRole('button', {name: 'view'}).click()
+}
+
+export {login, getToken, createUser, logout, createBlog, like, view}

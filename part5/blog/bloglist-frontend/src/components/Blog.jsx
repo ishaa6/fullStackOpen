@@ -2,13 +2,15 @@ import blogService from '../services/blogs'
 import { useState } from 'react'
 import Togglable from './Togglable'
 
-const Blog = ({ blog, onDelete }) => {
+const Blog = ({ blog, onDelete, onLike }) => {
   const [like, setLike] = useState(blog.likes)
   const [visible, setVisible] = useState(false)
 
-  const updateLike = () => {
-    blogService.updateData(blog.id, like+1)
-    .then(() => setLike(like+1))
+  const updateLike = async() => {
+    await blogService.updateData(blog.id, like+1)
+    onLike(blog.id),
+    setLike(like+1)
+
   }
 
   const handleDelete = () => {
@@ -20,8 +22,8 @@ const Blog = ({ blog, onDelete }) => {
   }
 
   return(
-    <div style={{display:visible?'':'flex'}}>
-      <div className='blog' style={{ margin: '0px 4px', display:'flex'}}>
+    <div className='blog' style={{display:visible?'':'flex'}}>
+      <div style={{ margin: '0px 4px', display:'flex'}}>
         <p className='title'>{blog.title}</p> 
         <p className='author' style={{marginLeft:'4px'}}>{blog.author}</p>
       </div>
@@ -33,14 +35,13 @@ const Blog = ({ blog, onDelete }) => {
         visible = {visible} 
         setVisible={setVisible}
       >
-          <p className='url' style={{ margin: '4px 0' }}>{blog.url}</p>
-          <p className='like' style={{ margin: '4px 0' }}>
+          <p className='url' style={{ margin: '0px 4px' }}>{blog.url}</p>
+          <p className='like' style={{ margin: '4px 4px' }}>
             {like}  
             <button onClick={updateLike}>
               like
             </button>
           </p>
-          <p style={{ margin: '4px 0' }}>{blog.author}</p>
           <button
             style={{backgroundColor:'	#557ff3ff'}}
             onClick={handleDelete}
