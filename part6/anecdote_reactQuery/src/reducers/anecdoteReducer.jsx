@@ -40,5 +40,5 @@ export const voteAnecdote = (anecdote) => {
     }
 } 
 
-export const {updateVote, createAnecdote, setAnecdotes} = anecdoteSlice.actions
+export const {updateVote,  createAnecdote, setAnecdotes} = anecdoteSlice.actions
 export default anecdoteSlice.reducer
