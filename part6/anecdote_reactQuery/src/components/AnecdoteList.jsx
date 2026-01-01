@@ -1,8 +1,13 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getAnecdotes, updateVote } from "../requests";
+import { useContext } from "react";
+
+import NotifContext from "../providers/NotifContext";
 
 const AnecdoteList = () => {
   const queryClient = useQueryClient()
+  const {dispatchNotif} = useContext(NotifContext)
+
   const voteMutation = useMutation({
         mutationFn: updateVote,
         onSuccess: (updatedAnecdote) => {
@@ -41,6 +46,10 @@ const AnecdoteList = () => {
           has {anecdote.votes} votes
           <button onClick = {() => {
             voteMutation.mutate(anecdote)
+            dispatchNotif({payload:`anecdote '${anecdote.anecdote}' voted`})
+            setTimeout(() => {
+              dispatchNotif({payload:''})
+            }, 5000)
           }}>
             vote
           </button>
