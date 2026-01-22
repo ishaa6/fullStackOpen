@@ -1,61 +1,97 @@
-const blogRouter = require('express').Router()
-const Blog = require('../models/blogs')
+import express from "express";
+const router = express.Router();
 
-blogRouter.get('/', async(request, response) => {
-  const blogs = await Blog.find({}).populate('user', { username: 1, name: 1 })
-  response.json(blogs)
+import Blog from "../models/blog.js";
+import User from "../models/user.js";
+
+router.get("/", async (request, response) => {
+  const notes = await Blog.find({})
+    .find({})
+    .populate("user", { username: 1, name: 1 })
+
+  response.json(notes)
 })
 
-blogRouter.post('/', async(request, response, next) => {
-  if (!request.user){
-    return response.status(401).json({error: 'token missing or invalid'})
+router.post("/", async (request, response) => {
+  if (!request.user) {
+    return response.status(401).json({ error: "token missing or invalid" })
   }
 
-  try{
-    const user = request.user
-    const blog = new Blog(request.body)
-    blog.user = user._id
-    const savedBlog = await blog.save()
-    if (user._id){
-        user.blogs = user.blogs.concat(savedBlog._id)
-        await user.save()
-    }
-    response.status(201).json(savedBlog)
-  } catch (error) {
-    next(error)
-  }
+  const user = request.user
+  const blog = new Blog({ ...request.body, user: user.id })
+
+  const savedBlog = await blog.save()
+
+  user.blogs = user.blogs.concat(savedBlog._id)
+  await user.save()
+
+  const blogToReturn = await Blog.findById(savedBlog._id).populate("user", {
+    username: 1,
+    name: 1,
+  })
+
+  response.status(201).json(blogToReturn)
 })
 
-blogRouter.delete('/:id', async(request, response, next) => {
-  if (!request.user){
-    return response.status(401).json({error: 'token missing or invalid'})
+router.delete("/:id", async (request, response) => {
+  const blogToDelete = await Blog.findById(request.params.id)
+  if (!blogToDelete) {
+    return response.status(204).end()
   }
 
-  try{
-    const user = request.user
-    const id = request.params.id
-    const blog = await Blog.findById(id)
-    if (!blog){
-      return response.status(404).json({error: 'blog not found'})
-    }
-    if (blog.user.toString() !== user.id.toString()){
-      return response.status(401).json({error: 'only the creator can delete a blog'})
-    }
-    await Blog.findByIdAndDelete(id)
-    response.status(204).end()
-  } catch (error) {
-    next(error)
+  if (blogToDelete.user && blogToDelete.user.toString() !== request.user.id) {
+    return response.status(401).json({
+      error: "only the creator can delete a blog",
+    })
   }
+
+  await Blog.findByIdAndRemove(request.params.id)
+
+  response.status(204).end()
 })
 
-blogRouter.put('/:id', async(request, response, next) => {
-  try{
-    const id = request.params.id
-    const updatedBlog = await Blog.findByIdAndUpdate(id, request.body, { new: true })
-    response.json(updatedBlog)
-  } catch (error) {
-    next(error)
-  }
+router.put("/:id", async (request, response) => {
+  const blog = request.body
+
+  const updatedBlog = await Blog.findByIdAndUpdate(request.params.id, blog, {
+    new: true,
+    runValidators: true,
+    context: "query",
+  }).populate("user", { username: 1, name: 1 })
+
+  response.json(updatedBlog)
 })
 
-module.exports = blogRouter
+router.post("/:id/comments", async (request, response) => {
+  const body = request.body
+
+  if (!body) {
+    return response.status(400).json({
+      error: "content missing",
+    })
+  }
+
+  const blog = await Blog.findById(request.params.id)
+  if (!blog) {
+    return response
+      .status(404)
+      .json({
+        error: "blog doesn't exist",
+      })
+      .end()
+  }
+
+  if (!blog.text) {
+    return response
+      .status(400)
+      .json({
+        error: "missing field 'text'",
+      })
+      .end()
+  }
+  blog.comments.push(body.text)
+  blog.save()
+  response.json(blog)
+})
+
+export default router

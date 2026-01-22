@@ -1,36 +1,47 @@
-const userRouter = require('express').Router()
-const User = require('../models/users')
-const bcrypt = require('bcrypt')
+import bcrypt from "bcrypt";
+import express from "express";
+const router = express.Router();
+import User from "../models/user.js";
 
-userRouter.post('/', async(request, response, next) => {
-    try{
-        const {username, password, name} = request.body
-        const passwordHash = await bcrypt.hash(password, 10)
+router.get("/", async (request, response) => {
+  const users = await User.find({}).populate("blogs", {
+    author: 1,
+    title: 1,
+    url: 1,
+    likes: 1,
+  })
 
-        if (username.length < 3 || password.length < 3) {
-            return response.status(400).json({error: 'username and password must be at least 3 characters long'})
-        }
-
-        const user = new User({
-            username,
-            name,
-            passwordHash,
-        })
-
-        const savedUser = await user.save()
-        response.status(201).json(savedUser)
-    } catch (error) {
-        next(error)
-    }
+  response.json(users)
 })
 
-userRouter.get('/', async(request, response) => {
-    try{
-        const users = await User.find({}).populate('blogs', { title: 1, author: 1, url: 1 })
-        response.json(users)
-    } catch (error) {
-        next(error)
-    }
+router.post("/", async (request, response) => {
+  const { username, name, password } = request.body
+
+  if (!password || password.length < 3) {
+    return response.status(400).json({
+      error: "invalid password",
+    })
+  }
+
+  const existingUser = await User.findOne({ username })
+  if (existingUser) {
+    return response.status(400).json({
+      error: "username must be unique",
+    })
+  }
+
+  const saltRounds = 10
+  const passwordHash = await bcrypt.hash(password, saltRounds)
+
+  const user = new User({
+    username,
+    name,
+    passwordHash,
+  })
+
+  const savedUser = await user.save()
+
+  response.status(201).json(savedUser)
 })
 
-module.exports = userRouter
+export default router
